@@ -150,6 +150,17 @@ func ValidKey(key string) bool {
 
 }
 
+//UnicURL проверка длинной ссылки на уникальность
+func UnicURL(url string) (string, bool) {
+
+	for k, u := range data.db {
+		if url == u {
+			return k, false
+		}
+	}
+	return "", true
+}
+
 // редирект на сохраненную страницу по ключу
 func (data *Data) redirect(w http.ResponseWriter, r *http.Request) {
 
@@ -171,13 +182,19 @@ func (data *Data) homepage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 
 		result.Link = r.FormValue("link")
+
 		if !ValidURL(result.Link) {
 			result.Link = "invalid link format"
 		} else {
-			sh := short()
-			shortlink := "http://" + httpaddress + "/to/" + sh
-			data.db[sh] = result.Link
-			result.Link = shortlink
+			k, unic := UnicURL(result.Link)
+			if !unic {
+				result.Link = "http://" + httpaddress + "/to/" + k
+			} else {
+				sh := short()
+				shortlink := "http://" + httpaddress + "/to/" + sh
+				data.db[sh] = result.Link
+				result.Link = shortlink
+			}
 			for key, value := range data.db {
 				fmt.Printf("%s === %s \n", key, value)
 			}
