@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package api;
+option go_package = "github.com/Lind-32/urlshortenergrpc/api";
+
+
+service ShortLink{
+    rpc Generate(LongLinkRequest) returns (ShortLinkResponse) {}
+    
+    rpc Retrive(ShortLinkRequest) returns (LongLinkResponse) {}
+}
+
+message LongLinkRequest {
+    string longlink= 1;
+}
+
+message ShortLinkResponse {
+    string shortlink = 1;
+}
+
+message ShortLinkRequest {
+    string shortlink= 1;
+}
+
+message LongLinkResponse {
+    string longlink = 1;
+}
