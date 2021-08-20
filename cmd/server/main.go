@@ -94,10 +94,16 @@ func (s *Server) Generate(ctx context.Context, req *api.LongLinkRequest) (*api.S
 	if !ValidURL(result.Link) {
 		result.Link = "invalid link format"
 	} else {
-		sh := short()
-		shortlink := "http://" + httpaddress + "/to/" + sh
-		data.db[sh] = result.Link
-		result.Link = shortlink
+		k, unic := UnicURL(result.Link)
+		if !unic {
+			result.Link = "http://" + httpaddress + "/to/" + k
+		} else {
+
+			sh := short()
+			shortlink := "http://" + httpaddress + "/to/" + sh
+			data.db[sh] = result.Link
+			result.Link = shortlink
+		}
 	}
 
 	return &api.ShortLinkResponse{Shortlink: "Generated short link: " + result.Link}, nil
