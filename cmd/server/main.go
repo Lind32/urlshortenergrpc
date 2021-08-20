@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-//Data ... inmemory DB
+//Data ... in-memory DB
 type Data struct {
 	db map[string]string
 }
@@ -111,8 +111,12 @@ func (s *Server) Retrive(ctx context.Context, req *api.ShortLinkRequest) (*api.L
 	}
 
 	key := strings.Trim(url.Path, "/to/")
+	res := data.db[key]
+	if res == "" {
+		res = "not saved"
+	}
 
-	return &api.LongLinkResponse{Longlink: "Retrieved lond link: " + data.db[key]}, nil
+	return &api.LongLinkResponse{Longlink: "Retrieved lond link: " + res}, nil
 }
 
 //генерация ключа
@@ -159,7 +163,7 @@ func (data *Data) redirect(w http.ResponseWriter, r *http.Request) {
 // интерфейс базовой страницы
 func (data *Data) homepage(w http.ResponseWriter, r *http.Request) {
 
-	temp, err := template.ParseFiles("templates/index1.html")
+	temp, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		fmt.Fprintf(w, "Template error: %s/n", err.Error())
 	}
