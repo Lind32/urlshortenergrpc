@@ -5,12 +5,12 @@ import (
 	"flag"
 	"log"
 
-	"github.com/Lind-32/urlshortenergrpc/api"
+	api "github.com/Lind-32/urlshortenergrpc/internal/pkg"
 	"google.golang.org/grpc"
 )
 
 const (
-	address = "localhost:8000"
+	address = "localhost:8020"
 )
 
 func main() {
@@ -35,8 +35,10 @@ func main() {
 	if *longlink == "link" {
 		log.Fatal("link is missing")
 	}
-	//Generate получает длинную ссылку, возвращает короткую
+
 	c := api.NewShortLinkClient(conn)
+
+	//Generate получает длинную ссылку, возвращает короткую
 	if *generateflag {
 		res, err := c.Generate(context.Background(), &api.LongLinkRequest{Longlink: *longlink})
 		if err != nil {
