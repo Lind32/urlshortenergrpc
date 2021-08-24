@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	api "github.com/Lind-32/urlshortenergrpc/internal/pkg"
+	api "github.com/Lind-32/urlshortenergrpc/pkg"
 	"google.golang.org/grpc"
 )
 

@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	api "github.com/Lind-32/urlshortenergrpc/internal/pkg"
 	"github.com/Lind-32/urlshortenergrpc/internal/pkg/store"
+	api "github.com/Lind-32/urlshortenergrpc/pkg"
 	"google.golang.org/grpc"
 )
 
