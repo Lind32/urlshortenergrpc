@@ -89,7 +89,7 @@ func (s *Server) Retrive(ctx context.Context, req *api.ShortLinkRequest) (*api.L
 	if err != nil {
 		panic(err)
 	}
-	key := strings.Trim(url.Path, "/to/")
+	key := strings.Trim(url.Path, "to/")
 	res, err := store.GetLongURL(key)
 	if err != nil {
 		panic(err)

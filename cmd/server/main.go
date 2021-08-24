@@ -8,5 +8,5 @@ func main() {
 
 	//запуск gRPC и HTTP серверов
 	go app.ServerGRPC()
-	app.ServerGRPC()
+	app.ServerHTTP()
 }
