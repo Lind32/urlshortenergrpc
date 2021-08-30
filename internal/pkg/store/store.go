@@ -3,18 +3,11 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
+	"github.com/Lind-32/urlshortenergrpc/internal/config"
 	_ "github.com/lib/pq" //...
-)
-
-const (
-
-	//postgres
-	pgHost = "127.0.0.1"
-	pgPort = "5432"
-	pgUser = "postgres"
-	pgPass = "postgres"
-	pgName = "shortURL"
+	"github.com/pressly/goose"
 )
 
 var db *sql.DB
@@ -25,12 +18,28 @@ func Close() {
 }
 
 //Connect подключение к базе данных
-func Connect() error {
+func Connect(cfg config.Config) error {
 
-	pgparam := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", pgHost, pgPort, pgUser, pgPass, pgName)
-
+	p := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Data.PgHost, cfg.Data.PgPort, cfg.Data.PgUser, cfg.Data.PgPass, cfg.Data.PgName)
+	log.Printf("DB connection...\n")
 	var err error
-	db, err = sql.Open("postgres", pgparam)
+	db, err = sql.Open("postgres", p)
+	if err != nil {
+		return err
+	}
+	log.Printf("Connected: %s:%s DB: %s\n", cfg.Data.PgHost, cfg.Data.PgPort, cfg.Data.PgName)
+
+	//очистка БД
+	if cfg.Data.PgClean {
+		log.Printf("Cleaning DB...\n")
+		err := goose.DownTo(db, ".", 0)
+		if err != nil {
+			return err
+		}
+	}
+	//миграция БД
+	log.Printf("Migration DB...\n")
+	err = goose.Up(db, ".")
 	if err != nil {
 		return err
 	}
@@ -39,10 +48,10 @@ func Connect() error {
 }
 
 //Insert запись в базу данных]
-func Insert(key, longlink string) error {
+func Insert(key, llink string) error {
 
 	var err error
-	_, err = db.Exec(`INSERT INTO "URLlist" (key, longlink) VALUES ($1, $2)`, key, longlink)
+	_, err = db.Exec(`INSERT INTO "shorts_url" (key, long_link) VALUES ($1, $2)`, key, llink)
 	if err != nil {
 		return err
 	}
@@ -53,7 +62,7 @@ func Insert(key, longlink string) error {
 //GetLongURL возвращает длинную ссылку по ключу
 func GetLongURL(key string) (string, error) {
 	var l string
-	r := db.QueryRow(`SELECT longlink FROM "URLlist" WHERE key = $1`, key)
+	r := db.QueryRow(`SELECT long_link FROM "shorts_url" WHERE key = $1`, key)
 	err := r.Scan(&l)
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -64,10 +73,10 @@ func GetLongURL(key string) (string, error) {
 	return l, nil
 }
 
-//UnicURL проверка длинной ссылки на уникальность (true если уникальнfz)
+//UnicURL проверка длинной ссылки на уникальность (true если уникальна)
 func UnicURL(lurl string) (string, bool, error) {
 	var key string
-	r := db.QueryRow(`SELECT key FROM "URLlist" WHERE longlink = $1`, lurl)
+	r := db.QueryRow(`SELECT key FROM "shorts_url" WHERE long_link = $1`, lurl)
 	err := r.Scan(&key)
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -85,7 +94,7 @@ func UnicKey(key string) (bool, error) {
 		return false, nil
 	}
 
-	r := db.QueryRow(`SELECT key FROM "URLlist" WHERE key = $1`, key)
+	r := db.QueryRow(`SELECT key FROM "shorts_url" WHERE key = $1`, key)
 	err := r.Scan(&key)
 	if err != nil {
 		if err != sql.ErrNoRows {
